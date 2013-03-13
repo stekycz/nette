@@ -287,12 +287,14 @@ class ContainerBuilder extends Nette\Object
 			}
 
 		} elseif ($service = $this->getServiceName($factory)) { // alias or factory
+			if (!$def->implement) {
+				$def->autowired = FALSE;
+			}
 			if (Strings::contains($service, '\\')) { // @\Class
 				/*5.2* $service = ltrim($service, '\\');*/
-				$def->autowired = FALSE;
 				return $def->class = $service;
 			}
-			if ($this->definitions[$service]->shared) {
+			if ($this->definitions[$service]->implement) {
 				$def->autowired = FALSE;
 			}
 			return $def->class = $this->resolveClass($service, $recursive);
