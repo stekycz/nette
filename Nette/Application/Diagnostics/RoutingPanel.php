@@ -91,24 +91,24 @@ class RoutingPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 	 */
 	private function analyse($router, $module = '')
 	{
+		$matched = 'no';
 		if ($router instanceof Routers\RouteList) {
+			$router->onMatch[] = function (Routers\RouteList $routeList, Nette\Application\Request $request) use ($module, & $matched) {
+				$request->setPresenterName($module . $request->getPresenterName());
+				$matched = 'may';
+				if (empty($this->request)) {
+					$this->request = $request;
+					$this->findSource();
+					$matched = 'yes';
+				}
+			};
 			foreach ($router as $subRouter) {
 				$this->analyse($subRouter, $module . $router->getModule());
 			}
 			return;
 		}
 
-		$matched = 'no';
 		$request = $router->match($this->httpRequest);
-		if ($request) {
-			$request->setPresenterName($module . $request->getPresenterName());
-			$matched = 'may';
-			if (empty($this->request)) {
-				$this->request = $request;
-				$this->findSource();
-				$matched = 'yes';
-			}
-		}
 
 		$this->routers[] = array(
 			'matched' => $matched,

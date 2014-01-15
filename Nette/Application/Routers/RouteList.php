@@ -18,6 +18,9 @@ use Nette;
  */
 class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 {
+	/** @var array of function(RouteList $routeList, Nette\Application\Request $request); Occurs when route is matched */
+	public $onMatch = array();
+
 	/** @var array */
 	private $cachedRoutes;
 
@@ -43,6 +46,9 @@ class RouteList extends Nette\ArrayList implements Nette\Application\IRouter
 				$name = $appRequest->getPresenterName();
 				if (strncmp($name, 'Nette:', 6)) {
 					$appRequest->setPresenterName($this->module . $name);
+				}
+				if (!($route instanceof self) && $route instanceof Nette\Application\IRouter) {
+					$this->onMatch($this, $appRequest);
 				}
 				return $appRequest;
 			}
